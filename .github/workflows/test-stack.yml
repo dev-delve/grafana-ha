@@ -24,13 +24,22 @@ jobs:
         run: docker compose up -d --wait
 
       - name: Check running containers
-        run: |
-          docker compose ps
-          docker compose logs grafana-db --tail=20
+        run: docker compose ps
 
-      - name: Wait and test Nginx
+      - name: Show Postgres logs
+        run: docker compose logs --tail=30 postgres
+
+      - name: Show Grafana 1 logs
+        run: docker compose logs --tail=30 grafana1
+
+      - name: Show Grafana 2 logs
+        run: docker compose logs --tail=30 grafana2
+
+      - name: Wait for services to stabilize
+        run: sleep 15
+
+      - name: Test Nginx
         run: |
-          sleep 15
           curl -v http://localhost
           curl -sf http://localhost > /dev/null && echo "Nginx is UP" || exit 1
 
