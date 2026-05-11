@@ -36,12 +36,6 @@ services:
         condition: service_healthy
     networks:
       - grafana-net
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   grafana2:
     image: grafana/grafana:latest
@@ -57,16 +51,9 @@ services:
       GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
     depends_on:
-      postgres:
-        condition: service_healthy
+      - grafana1
     networks:
       - grafana-net
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   nginx:
     image: nginx:alpine
@@ -77,10 +64,8 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      grafana1:
-        condition: service_healthy
-      grafana2:
-        condition: service_healthy
+      - grafana1
+      - grafana2
     networks:
       - grafana-net
 

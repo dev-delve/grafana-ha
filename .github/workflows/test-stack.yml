@@ -21,24 +21,27 @@ jobs:
           cat .env
 
       - name: Start Docker Compose stack
-        run: docker compose up -d --wait
+        run: docker compose up -d
+
+      - name: Wait for services to start
+        run: sleep 45
 
       - name: Check running containers
         run: docker compose ps
 
       - name: Show Postgres logs
-        run: docker compose logs --tail=30 postgres
+        run: docker compose logs --tail=20 postgres
 
       - name: Show Grafana 1 logs
-        run: docker compose logs --tail=30 grafana1
+        run: docker compose logs --tail=20 grafana1
 
       - name: Show Grafana 2 logs
-        run: docker compose logs --tail=30 grafana2
+        run: docker compose logs --tail=20 grafana2
 
-      - name: Wait for services to stabilize
-        run: sleep 15
+      - name: Show Nginx logs
+        run: docker compose logs --tail=20 nginx
 
-      - name: Test Nginx
+      - name: Test Nginx response
         run: |
           curl -v http://localhost
           curl -sf http://localhost > /dev/null && echo "Nginx is UP" || exit 1
