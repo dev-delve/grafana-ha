@@ -1,0 +1,43 @@
+name: Test Grafana HA Stack
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env from example
+        run: |
+          cp .env.example .env
+          sed -i 's/CHANGE_ME/testpassword123/g' .env
+          cat .env
+
+      - name: Start Docker Compose stack
+        run: docker compose up -d --wait
+
+      - name: Check running containers
+        run: |
+          docker compose ps
+          docker compose logs grafana-db --tail=20
+
+      - name: Wait and test Nginx
+        run: |
+          sleep 15
+          curl -v http://localhost
+          curl -sf http://localhost > /dev/null && echo "Nginx is UP" || exit 1
+
+      - name: Test Grafana login page
+        run: |
+          curl -sf http://localhost/login && echo "Grafana responds" || exit 1
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
